@@ -1,0 +1,368 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>🚨 SECURITY CHECK REQUIRED 🚨</title>
+    <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
+    <style>
+        :root {
+            --bg-dark: #0f0f13;
+            --card-bg: #1e1e24;
+            --accent-purple: #9b5de5;
+            --accent-pink: #f15bb5;
+            --accent-yellow: #fee440;
+            --text-main: #f5f5f7;
+            --text-muted: #9e9eaf;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Courier New', Courier, monospace;
+        }
+
+        body {
+            background-color: var(--bg-dark);
+            color: var(--text-main);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            padding: 1rem;
+            overflow-x: hidden;
+        }
+
+        .game-container {
+            width: 100%;
+            max-width: 550px;
+            background-color: var(--card-bg);
+            border: 2px solid var(--accent-purple);
+            border-radius: 12px;
+            padding: 2rem;
+            box-shadow: 0 10px 30px rgba(155, 93, 229, 0.2);
+            text-align: center;
+            position: relative;
+            transition: border-color 0.3s;
+        }
+
+        h2 {
+            font-size: 1.3rem;
+            margin-bottom: 1rem;
+            color: var(--accent-yellow);
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        p.instructions {
+            color: var(--text-muted);
+            font-size: 0.9rem;
+            margin-bottom: 1.5rem;
+            line-height: 1.4;
+        }
+
+        /* --- STAGE 1: CAPTCHA --- */
+        .captcha-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 10px;
+            margin-bottom: 1.5rem;
+        }
+
+        .captcha-item {
+            background: rgba(255,255,255,0.03);
+            border: 1px solid rgba(255,255,255,0.1);
+            border-radius: 6px;
+            padding: 1.2rem 0.5rem;
+            cursor: pointer;
+            font-size: 0.82rem;
+            transition: all 0.2s;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+            gap: 10px;
+            user-select: none;
+            min-height: 110px;
+        }
+
+        .captcha-item:hover {
+            border-color: var(--accent-purple);
+            background: rgba(155, 93, 229, 0.05);
+        }
+
+        .captcha-item.selected {
+            border-color: var(--accent-pink);
+            background: rgba(241, 91, 181, 0.15);
+            transform: scale(0.98);
+        }
+
+        .checkbox-mimic {
+            width: 16px;
+            height: 16px;
+            border: 2px solid var(--text-muted);
+            border-radius: 3px;
+            display: inline-block;
+            position: relative;
+            flex-shrink: 0;
+        }
+
+        .captcha-item.selected .checkbox-mimic {
+            background-color: var(--accent-pink);
+            border-color: var(--accent-pink);
+        }
+
+        /* --- STAGE 2: THE GIANT RUNAWAY ARENA --- */
+        .runaway-zone {
+            position: relative;
+            height: 400px; /* Massive chasing box size */
+            margin-top: 1rem;
+            border: 2px dashed rgba(255, 255, 255, 0.1);
+            background: rgba(0,0,0,0.15);
+            border-radius: 8px;
+            overflow: hidden;
+        }
+
+        .btn-action {
+            background-color: var(--accent-purple);
+            color: white;
+            border: none;
+            padding: 0.8rem 1.5rem;
+            border-radius: 6px;
+            font-weight: bold;
+            font-size: 0.9rem;
+            cursor: pointer;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.3);
+        }
+
+        #runaway-btn {
+            position: absolute;
+            left: 35%;
+            top: 45%;
+            transition: left 0.08s cubic-bezier(0.25, 1, 0.5, 1), top 0.08s cubic-bezier(0.25, 1, 0.5, 1);
+            white-space: nowrap;
+            z-index: 10;
+        }
+
+        .timer-display {
+            font-size: 1.1rem;
+            color: var(--accent-pink);
+            font-weight: bold;
+            margin-bottom: 0.5rem;
+        }
+
+        /* --- FINAL REVEAL VIEW --- */
+        .reveal-card {
+            display: none;
+            animation: popIn 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
+        }
+
+        @keyframes popIn {
+            0% { transform: scale(0.8); opacity: 0; }
+            100% { transform: scale(1); opacity: 1; }
+        }
+
+        .birthday-title {
+            font-size: 2.2rem;
+            color: var(--accent-pink);
+            margin-bottom: 1rem;
+            text-shadow: 2px 2px 0 var(--accent-yellow);
+            font-family: Arial, sans-serif;
+        }
+
+        .letter-body {
+            background: rgba(0, 0, 0, 0.2);
+            padding: 1.5rem;
+            border-radius: 8px;
+            border-left: 4px solid var(--accent-yellow);
+            text-align: left;
+            font-size: 0.95rem;
+            line-height: 1.6;
+            color: #e2e2e9;
+        }
+
+        .signature {
+            margin-top: 1.5rem;
+            text-align: right;
+            font-weight: bold;
+            color: var(--accent-purple);
+        }
+    </style>
+</head>
+<body>
+
+    <div class="game-container" id="puzzle-box">
+        <div id="stage-1">
+            <h2>Security Gate 1/2</h2>
+            <p class="instructions">Prove you're actually turning 32. <br>Select all items that apply to your current biological and psychological setup:</p>
+            
+            <div class="captcha-grid">
+                <div class="captcha-item" id="nap-option" onclick="toggleCaptcha(this, true)">
+                    <span class="checkbox-mimic"></span>
+                    <span>Naps a lot (and considers it a hobby)</span>
+                </div>
+                <div class="captcha-item" onclick="toggleCaptcha(this, true)">
+                    <span class="checkbox-mimic"></span>
+                    <span>Unexplained desire to turn everything cute into a Christmas ornament</span>
+                </div>
+                <div class="captcha-item" onclick="toggleCaptcha(this, false)">
+                    <span class="checkbox-mimic"></span>
+                    <span>Understanding modern slang without a search engine</span>
+                </div>
+                <div class="captcha-item" onclick="toggleCaptcha(this, true)">
+                    <span class="checkbox-mimic"></span>
+                    <span>Having a strong opinion on a kitchen sponge brand</span>
+                </div>
+            </div>
+
+            <button class="btn-action" onclick="verifyStage1()">Verify 32yo Status</button>
+        </div>
+
+        <div id="stage-2" style="display: none;">
+            <h2>Security Gate 2/2</h2>
+            <div class="timer-display" id="countdown-wrapper">Security Lockout: <span id="timer-sec">20</span>s</div>
+            <p class="instructions">Click the button inside the containment grid to accept your birthday data packages.</p>
+            
+            <div class="runaway-zone" id="runaway-zone">
+                <button class="btn-action" id="runaway-btn">Click Me to Open Card!</button>
+            </div>
+        </div>
+
+        <div class="reveal-card" id="final-reveal">
+            <h1 class="birthday-title">🎉 HAPPY BIRTHDAY FRIEND! 🎉</h1>
+            <div class="letter-body">
+                <p>You actually survived the high-security gauntlet! 😂</p>
+                <br>
+                <p>Honestly, I'm so incredibly lucky to have a friend like you in my life. From the endless inside jokes to everything in between, you fill lives with laughter.</p>
+                <br>
+                <p>Welcome to 32. Your joints might click a little louder now, and absolutely everything can be a Christmas ornament if you try hard enough, but you're absolutely crushing it. </p>
+                <br>
+                <p>I hope you know that you're one of the most important people in my life and someone that I love dearly, even if we don't spend as much time together anymore. But don't worry, (or do!) you're still stuck with me for life! Here's to many, many more years of laughter and friendship.</p>
+
+                <div class="signature">- amanda</div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let timeRemaining = 20;
+        let isTimerRunning = false;
+        let countdownInterval;
+        const runawayBtn = document.getElementById('runaway-btn');
+        const runawayZone = document.getElementById('runaway-zone');
+        const timerSec = document.getElementById('timer-sec');
+
+        function toggleCaptcha(element, isCorrectAgeSign) {
+            element.classList.toggle('selected');
+            element.setAttribute('data-target', isCorrectAgeSign);
+        }
+
+        function verifyStage1() {
+            const items = document.querySelectorAll('.captcha-item');
+            const napOption = document.getElementById('nap-option');
+            let perfectScore = true;
+
+            // STRICT RULE: If nap option isn't selected, instantly block them
+            if (!napOption.classList.contains('selected')) {
+                alert("ACCESS DENIED. The security system scanned your recent profile history and found a dangerous lack of napping dedication. Select the nap option because there are no naps like a Kebus nap.");
+                return;
+            }
+
+            items.forEach(item => {
+                const isSelected = item.classList.contains('selected');
+                const isTargetSign = item.getAttribute('data-target') === 'true';
+
+                if ((isSelected && !isTargetSign) || (!isSelected && isTargetSign)) {
+                    perfectScore = false;
+                }
+            });
+
+            if (perfectScore) {
+                document.getElementById('stage-1').style.display = 'none';
+                document.getElementById('stage-2').style.display = 'block';
+                setupRunawayButton();
+            } else {
+                alert("ACCESS DENIED. Your profile selections do not match standard 32-year-old diagnostics. Check your settings and try again!");
+            }
+        }
+
+        function setupRunawayButton() {
+            function startSystemTimer() {
+                isTimerRunning = true;
+                countdownInterval = setInterval(() => {
+                    timeRemaining--;
+                    timerSec.textContent = timeRemaining;
+
+                    if (timeRemaining <= 0) {
+                        clearInterval(countdownInterval);
+                        isTimerRunning = false;
+                        
+                        // Defuse the runaway properties
+                        document.getElementById('countdown-wrapper').innerHTML = "🟢 SECURITY LOCK DISENGAGED";
+                        document.getElementById('countdown-wrapper').style.color = "#4cd964";
+                        
+                        runawayBtn.textContent = "Open Your Card! 🎁";
+                        runawayBtn.style.backgroundColor = "#4cd964";
+                        runawayBtn.style.position = "static"; // Snaps button back to standard center
+                        
+                        // Remove listeners completely so it freezes in place
+                        runawayBtn.removeEventListener('mouseenter', moveButton);
+                        runawayBtn.removeEventListener('touchstart', moveButton);
+                    }
+                }, 1000);
+            }
+
+            function moveButton(e) {
+                // First attempt to chase the button triggers the frustration clock countdown
+                if (!isTimerRunning && timeRemaining > 0) {
+                    startSystemTimer();
+                }
+
+                if (timeRemaining <= 0) return;
+
+                const insults = [
+                    "Too slow!", "Not even close!", "Try harder! 😂", "Missed me!", 
+                    "Is your screen lagging?", "Gotta be quicker!", "Nope!", "Try a stylus!"
+                ];
+                runawayBtn.textContent = insults[Math.floor(Math.random() * insults.length)];
+
+                const zoneWidth = runawayZone.clientWidth;
+                const zoneHeight = runawayZone.clientHeight;
+                const btnWidth = runawayBtn.clientWidth;
+                const btnHeight = runawayBtn.clientHeight;
+
+                // Keeps button strictly within the massive dashed arena layout bounds
+                const randomX = Math.floor(Math.random() * (zoneWidth - btnWidth));
+                const randomY = Math.floor(Math.random() * (zoneHeight - btnHeight));
+
+                runawayBtn.style.left = `${randomX}px`;
+                runawayBtn.style.top = `${randomY}px`;
+            }
+
+            // Bind tracking evasion loops
+            runawayBtn.addEventListener('mouseenter', moveButton);
+            runawayBtn.addEventListener('touchstart', moveButton);
+
+            runawayBtn.addEventListener('click', () => {
+                // Button only fires click sequence once the clock hits 0 and disengages evasion locks
+                if (timeRemaining <= 0) {
+                    triggerConfettiExplosion();
+                    document.getElementById('stage-2').style.display = 'none';
+                    document.getElementById('final-reveal').style.display = 'block';
+                    document.getElementById('puzzle-box').style.borderColor = '#fee440';
+                }
+            });
+        }
+
+        function triggerConfettiExplosion() {
+            confetti({ particleCount: 150, spread: 80, origin: { y: 0.6 } });
+            setTimeout(() => {
+                confetti({ particleCount: 60, angle: 60, spread: 55, origin: { x: 0 } });
+                confetti({ particleCount: 60, angle: 120, spread: 55, origin: { x: 1 } });
+            }, 250);
+        }
+    </script>
+</body>
+</html>
